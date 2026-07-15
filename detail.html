@@ -176,32 +176,34 @@ function generatePromoText(showId, name, season, episode) {
     // Memilih 1 dari 3 judul secara acak
     const fixedTitle = titleOptions[Math.floor(Math.random() * titleOptions.length)];
 
-    // 5. Deskripsi Minimalis (Pola SEO Sederhana) - Semua \n DIHAPUS agar teks menyamping/horizontal
-    const fullDescription = `"Watch ${name} - Season ${season} Episode ${episode} Full Episode ` +
-                            `${name} S${season}E${episode} HD ` +
-                            `${name} S${season} E${episode} Full HD ` +
-                            `${name} S${season}XE${episode} Full Episode ` +
-                            `${name} S${season} X E${episode} Full Episode HD ` +
-                            `${name} Season ${season} Episode ${episode} HD ` +
-                            `${name} Season ${season} Episode ${episode} Full HD ` +
-                            `${name} Season ${season} Episode ${episode} Full Episode ` +
-                            `This video contains commentary, reactions, analysis, and discussion about ${name} Season ${season} Episode ${episode}. ` +
-                            `I hope you enjoy watching the series ${name} Season ${season} Episode ${episode} on My Channel. ` +
-                            `Subscribe to my channel and get notifications for the latest Episodes. ` +
-                            `Thanks for visiting & watching. ` +
-                            `#${hashtagName} ` +
-                            `#${hashtagName}season${season} ` +
-                            `#${hashtagName}episode${episode} ` +
-                            `#${hashtagName}s${season}e${episode} ` +
+    // 5. Deskripsi Tetap Normal (Menggunakan \n agar rapi ke bawah)
+    const fullDescription = `"Watch ${name} - Season ${season} Episode ${episode} Full Episode\n\n` +
+                            `${name} S${season}E${episode} HD\n` +
+                            `${name} S${season} E${episode} Full HD\n` +
+                            `${name} S${season}XE${episode} Full Episode\n` +
+                            `${name} S${season} X E${episode} Full Episode HD\n` +
+                            `${name} Season ${season} Episode ${episode} HD\n` +
+                            `${name} Season ${season} Episode ${episode} Full HD\n` +
+                            `${name} Season ${season} Episode ${episode} Full Episode\n\n` +
+                            `This video contains commentary, reactions, analysis, and discussion about ${name} Season ${season} Episode ${episode}.\n\n` +
+                            `I hope you enjoy watching the series ${name} Season ${season} Episode ${episode} on My Channel.\n` +
+                            `Subscribe to my channel and get notifications for the latest Episodes.\n` +
+                            `Thanks for visiting & watching.\n\n` +
+                            `#${hashtagName}\n` +
+                            `#${hashtagName}season${season}\n` +
+                            `#${hashtagName}episode${episode}\n` +
+                            `#${hashtagName}s${season}e${episode}\n` +
                             `#tvseries #episodereview #seriesrecap #showbreakdown"`;
 
     // 6. Pinned Comment
     const shortComment = `"${name} S${season} E${episode}: ${watchLink}"`;
 
-    // 7. Baris Output CSV - Menyatu lurus tanpa enter/spasi ke bawah
-    return `${fixedTitle},${fullDescription},C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_5.jpg,${shortComment}`;
-}
+    // 7. Bagian path gambar dan link digabung rapat tanpa spasi/baris baru sama sekali
+    const imagePaths = `C:\\Users\\USER\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\USER\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\USER\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\USER\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\USER\\Desktop\\thumb\\${cleanTitle}_5.jpg`;
 
+    // Menggabungkan semuanya secara presisi
+    return `${fixedTitle},${fullDescription},${imagePaths},${shortComment}`;
+}
         async function init() {
             try {
                 const showRes = await fetch(`https://api.themoviedb.org/3/tv/${showId}?api_key=${TMDB_API_KEY}&language=en-US`);
