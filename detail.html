@@ -153,11 +153,22 @@
 
         if (!showId) window.location.href = 'index.html';
 
-function generatePromoText(name, season, episode) {
-    const cleanTitle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const hashtagName = name.toLowerCase().replace(/ /g, '');
-    const watchLink = `https://justplay-tv.online/tv/${showId}/${season}/${episode}`;
-    
+function generatePromoText(showId, name, season, episode) {
+    // 1. Membuat slug yang bersih untuk URL (huruf kecil, spasi diganti '-', karakter aneh dihapus)
+    const cleanTitle = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Menghapus karakter non-alphanumeric kecuali spasi
+        .replace(/\s+/g, '-');       // Mengubah spasi menjadi tanda hubung (-)
+
+    // 2. Membuat hashtag tanpa spasi
+    const hashtagName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // 3. Menyusun link sesuai format target: us.justplay-tv.online/tv/ID/slug-season-episode
+    const watchLink = `https://us.justplay-tv.online/tv/${showId}/${cleanTitle}-${season}-${episode}`;
+
+    // Contoh output teks promo (bisa kamu sesuaikan dengan kebutuhanmu)
+    return `Nonton ${name} S${season} EP${episode} di sini: ${watchLink} #${hashtagName}`;
+}
     // 1. 3 Variasi Judul Sesuai Pola SEO Anda
     const titleOptions = [
         `${name} Season ${season} Episode ${episode} Full Episodes`,
