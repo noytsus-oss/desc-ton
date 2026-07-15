@@ -153,54 +153,54 @@
 
         if (!showId) window.location.href = 'index.html';
 
-        function generatePromoText(showId, name, season, episode) {
-            // 1. Membuat slug yang bersih untuk URL (huruf kecil, menghapus karakter khusus, spasi diganti '-')
-            const cleanTitle = name
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .trim()
-                .replace(/\s+/g, '-');
+function generatePromoText(showId, name, season, episode) {
+    // 1. Membuat slug yang bersih untuk URL (huruf kecil, menghapus karakter khusus, spasi diganti '-')
+    const cleanTitle = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
 
-            // 2. Membuat hashtag tanpa spasi
-            const hashtagName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // 2. Membuat hashtag tanpa spasi
+    const hashtagName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-            // 3. Menyusun link sesuai format target: us.justplay-tv.online/tv/ID/slug-season-episode
-            const watchLink = `https://us.justplay-tv.online/tv/${showId}/${cleanTitle}-${season}-${episode}`;
+    // 3. Menyusun link sesuai format target: us.justplay-tv.online/tv/ID/slug-season-episode
+    const watchLink = `https://us.justplay-tv.online/tv/${showId}/${cleanTitle}-${season}-${episode}`;
 
-            // 4. 3 Variasi Judul Sesuai Pola SEO Anda
-            const titleOptions = [
-                `${name} Season ${season} Episode ${episode} Full Episodes`,
-                `${name} Season ${season} Episode ${episode} Full Episode`,
-                `${name} Season ${season} Episode ${episode} Full Episode HD`
-            ];
-            // Memilih 1 dari 3 judul secara acak
-            const fixedTitle = titleOptions[Math.floor(Math.random() * titleOptions.length)];
+    // 4. 3 Variasi Judul Sesuai Pola SEO Anda
+    const titleOptions = [
+        `${name} Season ${season} Episode ${episode} Full Episodes`,
+        `${name} Season ${season} Episode ${episode} Full Episode`,
+        `${name} Season ${season} Episode ${episode} Full Episode HD`
+    ];
+    // Memilih 1 dari 3 judul secara acak
+    const fixedTitle = titleOptions[Math.floor(Math.random() * titleOptions.length)];
 
-            // 5. Deskripsi Minimalis (Pola SEO Sederhana)
-            const fullDescription = `"Watch ${name} - Season ${season} Episode ${episode} Full Episode\n\n` +
-                                    `${name} S${season}E${episode} HD\n` +
-                                    `${name} S${season} E${episode} Full HD\n` +
-                                    `${name} S${season}XE${episode} Full Episode\n` +
-                                    `${name} S${season} X E${episode} Full Episode HD\n` +
-                                    `${name} Season ${season} Episode ${episode} HD\n` +
-                                    `${name} Season ${season} Episode ${episode} Full HD\n` +
-                                    `${name} Season ${season} Episode ${episode} Full Episode\n\n` +
-                                    `This video contains commentary, reactions, analysis, and discussion about ${name} Season ${season} Episode ${episode}.\n\n` +
-                                    `I hope you enjoy watching the series ${name} Season ${season} Episode ${episode} on My Channel.\n` +
-                                    `Subscribe to my channel and get notifications for the latest Episodes.\n` +
-                                    `Thanks for visiting & watching.\n\n` +
-                                    `#${hashtagName}\n` +
-                                    `#${hashtagName}season${season}\n` +
-                                    `#${hashtagName}episode${episode}\n` +
-                                    `#${hashtagName}s${season}e${episode}\n` +
-                                    `#tvseries #episodereview #seriesrecap #showbreakdown"`;
+    // 5. Deskripsi Minimalis (Pola SEO Sederhana) - Semua \n DIHAPUS agar teks menyamping/horizontal
+    const fullDescription = `"Watch ${name} - Season ${season} Episode ${episode} Full Episode ` +
+                            `${name} S${season}E${episode} HD ` +
+                            `${name} S${season} E${episode} Full HD ` +
+                            `${name} S${season}XE${episode} Full Episode ` +
+                            `${name} S${season} X E${episode} Full Episode HD ` +
+                            `${name} Season ${season} Episode ${episode} HD ` +
+                            `${name} Season ${season} Episode ${episode} Full HD ` +
+                            `${name} Season ${season} Episode ${episode} Full Episode ` +
+                            `This video contains commentary, reactions, analysis, and discussion about ${name} Season ${season} Episode ${episode}. ` +
+                            `I hope you enjoy watching the series ${name} Season ${season} Episode ${episode} on My Channel. ` +
+                            `Subscribe to my channel and get notifications for the latest Episodes. ` +
+                            `Thanks for visiting & watching. ` +
+                            `#${hashtagName} ` +
+                            `#${hashtagName}season${season} ` +
+                            `#${hashtagName}episode${episode} ` +
+                            `#${hashtagName}s${season}e${episode} ` +
+                            `#tvseries #episodereview #seriesrecap #showbreakdown"`;
 
-            // 6. Pinned Comment
-            const shortComment = `"${name} S${season} E${episode}: ${watchLink}"`;
+    // 6. Pinned Comment
+    const shortComment = `"${name} S${season} E${episode}: ${watchLink}"`;
 
-            // 7. Baris Output CSV
-            return `${fixedTitle},${fullDescription},C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_5.jpg,${shortComment}`;
-        }
+    // 7. Baris Output CSV - Menyatu lurus tanpa enter/spasi ke bawah
+    return `${fixedTitle},${fullDescription},C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_5.jpg,${shortComment}`;
+}
 
         async function init() {
             try {
