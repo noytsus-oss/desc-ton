@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV HUB - Search Shows</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .search-gradient { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        .loader {
+            border: 4px solid #1e293b;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .page-link { transition: all 0.3s ease; }
+        .page-link.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <nav class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center border-b border-slate-800">
+        <a href="index.html" class="text-2xl font-extrabold tracking-tighter bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">TV HUB</a>
+        <a href="index.html" class="bg-slate-800 border border-white/10 px-5 py-2 rounded-full font-semibold text-sm hover:bg-slate-700 transition-all shadow-md">
+            <i class="fa-solid fa-house mr-2"></i> Home
+        </a>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 pt-12">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">Search TV Series</h1>
+            <p class="text-slate-400 font-medium mt-1">Explore and find details for any show worldwide</p>
+        </header>
+
+        <div class="relative max-w-2xl mx-auto mb-12">
+            <div class="flex items-center bg-slate-800/80 backdrop-blur rounded-full p-2 shadow-2xl border border-slate-700">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Type a show title... (e.g., Fallout, Shogun)" 
+                    class="bg-transparent flex-grow px-6 py-3 outline-none text-white placeholder-slate-500"
+                >
+                <button 
+                    onclick="searchSeries(1)" 
+                    class="search-gradient h-12 px-8 rounded-full font-bold hover:opacity-90 transition-all flex items-center justify-center"
+                >
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <div id="loaderContainer" class="hidden flex flex-col items-center justify-center py-20">
+            <div class="loader mb-4"></div>
+            <p class="text-slate-400 animate-pulse">Searching TV database...</p>
+        </div>
+
+        <div id="resultsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 mb-12"></div>
+
+        <div id="paginationWrapper" class="hidden flex flex-col items-center gap-6 mt-12 border-t border-slate-800 pt-10">
+            <div id="paginationContainer" class="flex justify-center items-center gap-2"></div>
+            <p id="pageInfo" class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]"></p>
+        </div>
+
+        <div id="emptyState" class="hidden text-center py-20">
+            <i class="fa-solid fa-face-frown text-6xl text-slate-700 mb-4"></i>
+            <p class="text-slate-500 text-xl">We couldn't find any matching TV series.</p>
+        </div>
+    </div>
+
+    <script>
+        const resultsGrid = document.getElementById('resultsGrid');
+        const loaderContainer = document.getElementById('loaderContainer');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const paginationWrapper = document.getElementById('paginationWrapper');
+        const pageInfo = document.getElementById('pageInfo');
+
+        const TMDB_API_KEY = "22be462e6d3de1dbab03d1ca50847b5a";
+        let currentPage = 1;
+        let totalPages = 1;
+
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchSeries(1); });
+
+        async function searchSeries(page = 1) {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            
+            currentPage = page;
+            showLoading(true);
+
+            try {
+                const url = `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=${page}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                totalPages = data.total_pages;
+                renderCards(data.results);
+            } catch (error) {
+                console.error(error);
+                showLoading(false);
+            }
+        }
+
+        function renderCards(results) {
+            showLoading(false);
+            resultsGrid.innerHTML = '';
+            
+            if (!results || results.length === 0) {
+                emptyState.classList.remove('hidden');
+                paginationWrapper.classList.add('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+            paginationWrapper.classList.remove('hidden');
+
+            results.forEach(show => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-3xl overflow-hidden flex flex-col cursor-pointer group relative';
+                
+                const imgUrl = show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : 'https://via.placeholder.com/500x750/1e293b/64748b?text=No+Poster';
+                const ratingValue = show.vote_average ? show.vote_average.toFixed(1) : null;
+                const ratingHTML = ratingValue ? `<i class="fa-solid fa-star text-yellow-500 mr-1"></i> ${ratingValue}` : '<i class="fa-solid fa-star text-slate-600 mr-1"></i> -';
+
+                card.innerHTML = `
+                    <div class="relative aspect-[2/3] overflow-hidden">
+                        <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="${show.name}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-90"></div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                             <h3 class="text-white font-bold text-base md:text-lg line-clamp-1 group-hover:text-blue-400 transition-colors leading-tight">${show.name}</h3>
+                        </div>
+                        <div class="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-xs font-bold border border-white/10 flex items-center shadow-2xl">
+                            ${ratingHTML}
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', (e) => {
+                    const url = `detail.html?id=${show.id}`;
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(url, '_blank');
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+                
+                resultsGrid.appendChild(card);
+            });
+
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderPagination() {
+            paginationContainer.innerHTML = '';
+            if (totalPages <= 1) { paginationWrapper.classList.add('hidden'); return; }
+            pageInfo.innerText = `Showing Page ${currentPage} of ${totalPages}`;
+
+            paginationContainer.appendChild(createPageBtn('<i class="fa-solid fa-angles-left"></i>', 1, currentPage === 1));
+            paginationContainer.appendChild(createPageBtn('<i class="fa-solid fa-chevron-left"></i>', currentPage - 1, currentPage === 1));
+
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, startPage + 2);
+            if (endPage - startPage < 2) startPage = Math.max(1, endPage - 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                if(i <= totalPages) {
+                    const btn = createPageBtn(i, i);
+                    if (i === currentPage) btn.classList.add('active');
+                    paginationContainer.appendChild(btn);
+                }
+            }
+
+            paginationContainer.appendChild(createPageBtn('<i class="fa-solid fa-chevron-right"></i>', currentPage + 1, currentPage === totalPages));
+            paginationContainer.appendChild(createPageBtn('<i class="fa-solid fa-angles-right"></i>', totalPages, currentPage === totalPages));
+        }
+
+        function createPageBtn(text, page, disabled = false) {
+            const btn = document.createElement('button');
+            btn.className = 'page-link min-w-[44px] h-11 px-3 rounded-2xl bg-slate-800 text-slate-400 font-bold text-sm flex items-center justify-center border border-white/5 shadow-xl';
+            btn.innerHTML = text;
+            btn.disabled = disabled;
+            if (!disabled) btn.onclick = () => searchSeries(page);
+            return btn;
+        }
+
+        function showLoading(status) {
+            if (status) {
+                loaderContainer.classList.remove('hidden');
+                resultsGrid.classList.add('hidden');
+                emptyState.classList.add('hidden');
+                paginationWrapper.classList.add('hidden');
+            } else {
+                loaderContainer.classList.add('hidden');
+                resultsGrid.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
