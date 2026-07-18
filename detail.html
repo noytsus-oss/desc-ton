@@ -153,30 +153,21 @@
 
         if (!showId) window.location.href = 'index.html';
 
-function generatePromoText(showId, name, season, episode) {
-    // 1. Membuat slug yang bersih untuk URL (huruf kecil, menghapus karakter khusus, spasi diganti '-')
-    const cleanTitle = name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '-');
-
-    // 2. Membuat hashtag tanpa spasi
-    const hashtagName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-    // 3. Menyusun link sesuai format target: usaflix.online/tv/ID/slug-season-episode
-    const watchLink = `https://usaflix.online/tv/${showId}/${cleanTitle}-${season}-${episode}`;
-
-    // 4. 3 Variasi Judul Sesuai Pola SEO Anda
+function generatePromoText(name, season, episode) {
+    const cleanTitle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hashtagName = name.toLowerCase().replace(/ /g, '');
+    const watchLink = `https://usaflix.online/tv/${showId}/${season}/${episode}`;
+    
+    // 1. 3 Variasi Judul Sesuai Pola SEO Anda
     const titleOptions = [
         `${name} Season ${season} Episode ${episode} Full Episodes`,
         `${name} Season ${season} Episode ${episode} Full Episode`,
         `${name} Season ${season} Episode ${episode} Full Episode HD`
     ];
-    // Memilih 1 dari 3 judul secara acak
+    // Memilih 1 dari 3 judul di atas secara acak setiap kali episode diganti
     const fixedTitle = titleOptions[Math.floor(Math.random() * titleOptions.length)];
 
-    // 5. Deskripsi Tetap Normal (Menggunakan \n agar rapi ke bawah)
+    // 2. Deskripsi Minimalis (Pola SEO Sederhana)
     const fullDescription = `"Watch ${name} - Season ${season} Episode ${episode} Full Episode\n\n` +
                             `${name} S${season}E${episode} HD\n` +
                             `${name} S${season} E${episode} Full HD\n` +
@@ -195,15 +186,13 @@ function generatePromoText(showId, name, season, episode) {
                             `#${hashtagName}s${season}e${episode}\n` +
                             `#tvseries #episodereview #seriesrecap #showbreakdown"`;
 
-    // 6. Pinned Comment
+    // 3. Pinned Comment
     const shortComment = `"${name} S${season} E${episode}: ${watchLink}"`;
 
-    // 7. Bagian path gambar dan link digabung rapat tanpa spasi/baris baru sama sekali
-    const imagePaths = `C:\\Users\\\Administrator\\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_5.jpg`;
-
-    // Menggabungkan semuanya secara presisi
-    return `${fixedTitle},${fullDescription},${imagePaths},${shortComment}`;
+    // 4. Baris Output CSV
+    return `${fixedTitle},${fullDescription},C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_1.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_2.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_3.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_4.jpg,C:\\Users\\Administrator\\Desktop\\thumb\\${cleanTitle}_5.jpg,${shortComment}`;
 }
+
         async function init() {
             try {
                 const showRes = await fetch(`https://api.themoviedb.org/3/tv/${showId}?api_key=${TMDB_API_KEY}&language=en-US`);
@@ -267,60 +256,63 @@ function generatePromoText(showId, name, season, episode) {
         }
 
         function shuffleAndDisplayImages() {
-            if (backdropPool.length === 0) return;
-            
-            let shuffled = [...backdropPool].sort(() => 0.5 - Math.random());
-            let selectedImages = shuffled.slice(0, 5);
-            
-            while(selectedImages.length < 5) {
-                selectedImages.push(backdropPool[Math.floor(Math.random() * backdropPool.length)]);
-            }
+    if (backdropPool.length === 0) return;
+    
+    let shuffled = [...backdropPool].sort(() => 0.5 - Math.random());
+    let selectedImages = shuffled.slice(0, 5);
+    
+    while(selectedImages.length < 5) {
+        selectedImages.push(backdropPool[Math.floor(Math.random() * backdropPool.length)]);
+    }
 
-            currentActiveImages = selectedImages;
+    currentActiveImages = selectedImages;
 
-            let htmlContent = '<div class="gallery-grid">';
-            selectedImages.forEach(url => {
-                const optimizedUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1200&h=675&fit=cover&q=90`;
-                htmlContent += `<div><img src="${optimizedUrl}" class="gallery-img"></div>`;
-            });
-            htmlContent += '</div>';
+    let htmlContent = '<div class="gallery-grid">';
+    selectedImages.forEach(url => {
+        // DIUBAH ke w=1200 dan q=90 agar di dashboard jernih
+        const optimizedUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1200&h=675&fit=cover&q=90`;
+        htmlContent += `<div><img src="${optimizedUrl}" class="gallery-img"></div>`;
+    });
+    htmlContent += '</div>';
 
-            document.getElementById('galleryContainer').innerHTML = htmlContent;
-        }
+    document.getElementById('galleryContainer').innerHTML = htmlContent;
+}
 
         async function downloadAllImages() {
-            if (currentActiveImages.length === 0) return;
-            const btn = document.getElementById('downloadImagesBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xl"></i> <span>Processing...</span>`;
+    if (currentActiveImages.length === 0) return;
+    const btn = document.getElementById('downloadImagesBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-xl"></i> <span>Processing...</span>`;
 
-            const cleanTitle = currentShowNameRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanTitle = currentShowNameRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-            for (let i = 0; i < currentActiveImages.length; i++) {
-                try {
-                    const optimizedUrl = `https://wsrv.nl/?url=${encodeURIComponent(currentActiveImages[i])}&w=1200&h=675&fit=cover&q=90`;
-                    const response = await fetch(optimizedUrl);
-                    const blob = await response.blob();
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.download = `${cleanTitle}_${i+1}.jpg`;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(blobUrl);
-                    
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                } catch (error) {
-                    console.error("Failed to download image index " + (i+1), error);
-                }
-            }
+    for (let i = 0; i < currentActiveImages.length; i++) {
+        try {
+            // Mengambil file beresolusi 1200px Full HD
+            const optimizedUrl = `https://wsrv.nl/?url=${encodeURIComponent(currentActiveImages[i])}&w=1200&h=675&fit=cover&q=90`;
+            const response = await fetch(optimizedUrl);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
             
-            btn.innerHTML = `<i class="fa-solid fa-check text-xl"></i> <span>Success!</span>`;
-            setTimeout(() => btn.innerHTML = originalHTML, 2000);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            // NAMA FILE DOWNLOAD: Tetap berurutan angka _1, _2, _3, _4, _5
+            a.download = `${cleanTitle}_${i+1}.jpg`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+            
+            await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (error) {
+            console.error("Failed to download image index " + (i+1), error);
         }
+    }
+    
+    btn.innerHTML = `<i class="fa-solid fa-check text-xl"></i> <span>Success!</span>`;
+    setTimeout(() => btn.innerHTML = originalHTML, 2000);
+}
 
         async function loadEpisodes(tvId, seasonNumber, targetEpisodeNum = null) {
             const epSelect = document.getElementById('episodeSelect');
@@ -349,7 +341,7 @@ function generatePromoText(showId, name, season, episode) {
 
                     epSelect.onchange = (e) => {
                         currentEpNum = e.target.value;
-                        document.getElementById('summary').innerText = generatePromoText(showId, currentShowNameRaw, currentSeasonNum, currentEpNum);
+                        document.getElementById('summary').innerText = generatePromoText(currentShowNameRaw, currentSeasonNum, currentEpNum);
                         shuffleAndDisplayImages();
                     };
 
